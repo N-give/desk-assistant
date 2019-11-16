@@ -8,30 +8,19 @@
 
 import os
 import time
-import datetime
+from datetime import datetime
+from typing import Tuple
 
 from PIL import Image, ImageDraw, ImageFont
 # from lib.waveshare_epd import epd7in5
 
-# picdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'pic')
-
-# font18 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 18)
-# font24 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 24)
-
 # XXX Set to desired system font or font from ./pic/
-
 # Recommended to use monospace font to ensure alignment shape and text
 # alignment
-
 # FreeMonoBold18: 11x18 pixels per char
 font18 = ImageFont.truetype("/usr/share/fonts/gnu-free/FreeMonoBold.otf", 18)
-
 # FreeMonoBold24: 15x24 pixels per char
 font24 = ImageFont.truetype("/usr/share/fonts/gnu-free/FreeMonoBold.otf", 24)
-
-# epd = epd7in5.EPD()
-# epd.init()
-# epd.Clear()
 
 WIDTH = 640
 HEIGHT = 384
@@ -45,11 +34,6 @@ WEEKDAYS = {
     5: "Sat",
     6: "Sun"
 }
-
-# img = Image.new('1', (WIDTH, HEIGHT), 255)  # 255 -> set image to all white
-# img = Image.new('1', (epd.width, epd.height), 0)
-# 255 -> set image to all white
-# 0   -> set image to all black
 
 # draw = ImageDraw.Draw(img)
 
@@ -74,43 +58,71 @@ class Draw:
         # self.epd.init()
         # self.epd.Clear()
 
+        # 255 -> set image to all white
+        # 0   -> set image to all black
         self.screen = Image.new('1', (WIDTH, HEIGHT), 255)
-        self.font18 = ImageFont.truetype("/usr/share/fonts/opentype/freefont/FreeMonoBold.otf", 18)
-        self.font24 = ImageFont.truetype("/usr/share/fonts/opentype/freefont/FreeMonoBold.otf", 24)
+        self.font18 = ImageFont.truetype(
+            "/usr/share/fonts/opentype/freefont/FreeMonoBold.otf", 18)
+        self.font24 = ImageFont.truetype(
+            "/usr/share/fonts/opentype/freefont/FreeMonoBold.otf", 24)
         self.draw_screen = ImageDraw.Draw(self.screen)
 
-
-    def show_away(self):
+    def show_away(self) -> None:
         '''Setup display to show away screen'''
 
-    def show_calendar(self):
+    def show_calendar(self) -> None:
         '''Setup display to show calendar'''
         # setup date in upper left corner
-        today = datetime.date.today()
-        self.draw_screen.text((70, 5), WEEKDAYS[today.weekday()], font=self.font18,
-                              fill=0)
-        self.draw_screen.ellipse([(70, 24), (103, 57)], fill=0,
-                                 outline=0)
-        self.draw_screen.text((71.5, 28.5), f'{today.day}', font=self.font24,
-                              fill=255)
+        # self.draw_screen.text((70, 5), WEEKDAYS[today.weekday()],
+        #                       font=self.font18, fill=0)
+        # self.draw_screen.ellipse([(70, 24), (103, 57)], fill=0, outline=0)
+        # self.draw_screen.text((71.5, 28.5), f'{today.day}', font=self.font24,
+        #                       fill=255)
 
+        today = datetime.today()
         # setup time grid for day
-        self.draw_screen.line([(65, 60), (65, HEIGHT)], fill=0)
-        self.draw_screen.line([(200, 60), (200, HEIGHT)], fill=0)
+        date_line: float = 65
+        grid_width: float = (WIDTH - 10) - date_line
+        day_width: float = grid_width / 3
 
-        self.draw_screen.line([(60, 60), (200, 60)], fill=0)
-        self.draw_screen.line([(60, 110), (200, 110)], fill=0)
-        self.draw_screen.line([(60, 160), (200, 160)], fill=0)
-        self.draw_screen.line([(60, 210), (200, 210)], fill=0)
-        self.draw_screen.line([(60, 260), (200, 260)], fill=0)
+        time_line: float = 60
+        grid_height: float = (HEIGHT - 10) - time_line
+        time_height: float = grid_height / 5
 
-        self.draw_screen.text((16, 51), '9:00', fill=0, font=self.font18)
-        self.draw_screen.text((16, 101), '9:30', fill=0, font=self.font18)
-        self.draw_screen.text((6, 151), '10:00', fill=0, font=self.font18)
-        self.draw_screen.text((6, 201), '10:30', fill=0, font=self.font18)
-        self.draw_screen.text((6, 251), '11:00', fill=0, font=self.font18)
+        for i in range(3):
+            self.draw_screen.line([(date_line, 60),
+                                   (date_line, (HEIGHT - 10))], fill=0)
+            self.draw_screen.text(((date_line + 5), 5),
+                                  WEEKDAYS[(today.weekday() + i) % 7],
+                                  font=self.font18, fill=0)
+            self.draw_screen.ellipse([((date_line + 5), 24),
+                                      ((date_line + 38), 57)],
+                                     fill=0,
+                                     outline=0)
+            self.draw_screen.text(((date_line + 6.5), 28.5),
+                                  f'{today.day + i}',
+                                  font=self.font24, fill=255)
 
-    def display(self):
+            date_line += day_width
+
+        self.draw_screen.line([(date_line, 60),
+                               (date_line, (HEIGHT - 10))], fill=0)
+
+        current_hour, current_minute = get_initial_time(today)
+        while time_line < HEIGHT:
+            self.draw_screen.line([(60, time_line),
+                                   ((WIDTH - 10), time_line)], fill=0)
+            self.draw_screen.text((6, (time_line - 9)),
+                                  f'{current_hour:02}:{current_minute:02}',
+                                  fill=0, font=self.font18)
+            current_minute += 30
+            if current_minute == 60:
+                current_minute = 0
+                current_hour += 1
+
+            time_line += time_height
+
+    def display(self) -> None:
         '''Send image to display'''
         # TODO comment out when running on pi
         self.screen.show()
@@ -120,7 +132,7 @@ class Draw:
         # time.sleep(2)
         # self.epd.sleep()
 
-    def add_event(self, event):
+    def add_event(self, event) -> None:
         '''Add event to calendar
         event: to be added to screen
         '''
@@ -131,6 +143,17 @@ class Draw:
         #       name
         #       location
         #       privacy
+
+
+def get_initial_time(today: datetime) -> Tuple[int, int]:
+    '''Get initial time set to most recent 30 minute mark'''
+    closest_interval: int = (today.minute // 10) * 10
+    if closest_interval > 30:
+        closest_interval = 30
+    else:
+        closest_interval = 0
+
+    return (today.hour, closest_interval)
 
 
 def main():
