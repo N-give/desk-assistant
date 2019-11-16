@@ -11,7 +11,7 @@ import time
 import datetime
 
 from PIL import Image, ImageDraw, ImageFont
-from lib.waveshare_epd import epd7in5
+# from lib.waveshare_epd import epd7in5
 
 # picdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'pic')
 
@@ -70,9 +70,9 @@ WEEKDAYS = {
 class Draw:
     '''Draw class to simplify displaying calendar information'''
     def __init__(self):
-        self.epd = epd7in5.EPD()
-        self.epd.init()
-        self.epd.Clear()
+        # self.epd = epd7in5.EPD()
+        # self.epd.init()
+        # self.epd.Clear()
 
         self.screen = Image.new('1', (WIDTH, HEIGHT), 255)
         self.font18 = ImageFont.truetype("/usr/share/fonts/opentype/freefont/FreeMonoBold.otf", 18)
@@ -113,12 +113,12 @@ class Draw:
     def display(self):
         '''Send image to display'''
         # TODO comment out when running on pi
-        # self.screen.show()
+        self.screen.show()
 
         # TODO uncomment for actual display
-        self.epd.display(self.epd.getbuffer(self.screen))
-        time.sleep(2)
-        self.epd.sleep()
+        # self.epd.display(self.epd.getbuffer(self.screen))
+        # time.sleep(2)
+        # self.epd.sleep()
 
     def add_event(self, event):
         '''Add event to calendar
