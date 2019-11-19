@@ -82,7 +82,7 @@ class G_calendar:
             start = event['start'].get('dateTime', event['start'].get('date'))
             print(start, event['summary'])
 
-    def _get_weekday(date):
+    def _get_weekday(self, date):
         '''Return the day of the week for the date'''
         date = datetime.datetime.strptime(date, '%d %m %Y').weekday()
         return (calendar.day_name[date])
@@ -96,19 +96,33 @@ class G_calendar:
         for event in events:
             event_dict = {}
             event_dict['title'] = event['summary']
-
+            # Process start of event time
             date_list = event['start'].get(
                 'dateTime', event['start'].get('date')).split('-')  # yyyy-mm-dd
-            event_dict['weekday'] = _get_weekday(
+            event_dict['start_weekday'] = _get_weekday(
                 date_list[2][:2]+" "+date_list[1]+" "+date_list[0])  # dd mm yyyy
 
             if event['start'].get('dateTime') is not None:
                 time_list = event['start'].get('dateTime').split('T')
-                event_dict['date'] = time_list[0]
-                event_dict['time'] = time_list[1].split('-')[0]
+                event_dict['start_date'] = time_list[0]
+                event_dict['start_time'] = time_list[1].split('-')[0]
             else:
-                event_dict['date'] = event['start'].get('date')
-                event_dict['time'] = None
+                event_dict['start_date'] = event['start'].get('date')
+                event_dict['start_time'] = None
+
+            # Process end of event time
+            date_list = event['end'].get(
+                'dateTime', event['end'].get('date')).split('-')  # yyyy-mm-dd
+            event_dict['end_weekday'] = _get_weekday(
+                date_list[2][:2]+" "+date_list[1]+" "+date_list[0])  # dd mm yyyy
+
+            if event['start'].get('dateTime') is not None:
+                time_list = event['end'].get('dateTime').split('T')
+                event_dict['end_date'] = time_list[0]
+                event_dict['end_time'] = time_list[1].split('-')[0]
+            else:
+                event_dict['end_date'] = event['end'].get('date')
+                event_dict['end_time'] = None
 
             event_dict['location'] = event.get('location')
             event_dict['privacy'] = 'public'
