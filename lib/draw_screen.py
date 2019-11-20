@@ -4,7 +4,7 @@ from typing import Tuple, Dict, List
 # import time
 from datetime import datetime
 from PIL import Image, ImageDraw, ImageFont  # type: ignore
-# from lib.waveshare_epd import epd7in5 # type: ignore
+# from waveshare_epd import epd7in5 # type: ignore
 
 # XXX Set to desired system font or font from ./pic/
 # Recommended to use monospace font to ensure alignment shape and text
@@ -45,12 +45,7 @@ class Draw:
             "/usr/share/fonts/opentype/freefont/FreeMonoBold.otf", 24)
         self.draw_screen = ImageDraw.Draw(self.screen)
         # event: title, time, location, privacy
-        self.events: List[Dict[str, str]] = [{
-            'title': 'event1',
-            'time': '2019-11-19 21:00:00',
-            'location': '...here',
-            'privacy': 'none'
-        }]
+        self.events: List[Dict[str, str]] = []
         self.days: Dict[int, float] = {}
         self.times: Dict[Tuple[int, int], float] = {}
 
@@ -59,6 +54,73 @@ class Draw:
 
     def show_calendar(self) -> None:
         '''Setup display to show calendar'''
+        self._draw_grid()
+        self._draw_events()
+
+    def _draw_events(self):
+        for event in self.events:
+            event_start = datetime.strptime(
+                f"{event['start_date']} {event['start_time']}",
+                "%Y-%m-%d %H:%M:%S")
+
+            # TODO these need to be found to the nearest half hour then adjusted
+            # when they're in between because only the lines drawn on half hour
+            # intervals
+            # TODO only +/- 2 pixels from top/bottom when time falls on time
+            # line boundary
+            # TODO add case when an event beginning has already already passed
+            # but the event hasn't ended yet
+            try:
+                etop = self.times[(event_start.hour, event_start.minute)] + 2
+                eleft = self.days[event_start.day] + 2
+                eright = self.days[event_start.day + 1] - 2
+                ebottom = self.times[((event_start.hour + 1),
+                                      event_start.minute)] - 2
+
+                # draw side lines with space to create rounded corners
+                # top
+                self.draw_screen.line(
+                    [((eleft + RADIUS), etop), ((eright - RADIUS), etop)],
+                    fill=0, width=1)
+                # bottom
+                self.draw_screen.line(
+                    [((eleft + RADIUS), ebottom), ((eright - RADIUS), ebottom)],
+                    fill=0, width=1)
+                # left
+                self.draw_screen.line(
+                    [(eleft, (etop + RADIUS)), (eleft, (ebottom - RADIUS))],
+                    fill=0, width=1)
+                # right
+                self.draw_screen.line(
+                    [(eright, (etop + RADIUS)), (eright, (ebottom - RADIUS))],
+                    fill=0, width=1)
+
+                # draw arcs to connect event sides
+                # top left corner
+                self.draw_screen.arc(
+                    [(eleft, etop),
+                     ((eleft + (2*RADIUS)), (etop + (2*RADIUS)))],
+                    180, 270, fill=0, width=1)
+                # top right corner
+                self.draw_screen.arc(
+                    [((eright - (2*RADIUS)), etop),
+                     (eright, (etop + (2*RADIUS)))],
+                    270, 0, fill=0, width=1)
+                # bottom left corner
+                self.draw_screen.arc(
+                    [(eleft, (ebottom - (2*RADIUS))),
+                     ((eleft + (2*RADIUS)), ebottom)],
+                    90, 180, fill=0, width=1)
+                # bottom right corner
+                self.draw_screen.arc(
+                    [((eright - (2*RADIUS)), (ebottom - (2*RADIUS))),
+                     (eright, ebottom)],
+                    0, 90, fill=0, width=1)
+
+            except KeyError as key_error:
+                print('Time not currently displayed on calendar:', key_error)
+
+    def _draw_grid(self) -> None:
         today = datetime.today()
 
         # setup time grid for day
@@ -94,7 +156,7 @@ class Draw:
                                (date_line, (HEIGHT - 10))], fill=0)
 
         # Draw time lines
-        current_hour, current_minute = get_initial_time(today)
+        current_hour, current_minute = _get_initial_time(today)
         while time_line < HEIGHT:
             self.times[(current_hour, current_minute)] = time_line
             self.draw_screen.line([(60, time_line),
@@ -109,61 +171,6 @@ class Draw:
 
             time_line += time_height
 
-        for event in self.events:
-            event_time = datetime.strptime(
-                event['time'], "%Y-%m-%d %H:%M:%S")
-
-            # TODO these need to be found to the nearest half hour then adjusted
-            # when they're in between because only the lines drawn on half hour
-            # intervals
-            # TODO only +/- 2 pixels from top/bottom when time falls on time
-            # line boundary
-            # TODO add case when an event beginning has already already passed
-            # but the event hasn't ended yet
-            etop = self.times[(event_time.hour, event_time.minute)] + 2
-            eleft = self.days[event_time.day] + 2
-            eright = self.days[event_time.day + 1] - 2
-            ebottom = self.times[((event_time.hour + 1),
-                                  event_time.minute)] - 2
-
-            # draw side lines with space to create rounded corners
-            # top
-            self.draw_screen.line(
-                [((eleft + RADIUS), etop), ((eright - RADIUS), etop)],
-                fill=0, width=1)
-            # bottom
-            self.draw_screen.line(
-                [((eleft + RADIUS), ebottom), ((eright - RADIUS), ebottom)],
-                fill=0, width=1)
-            # left
-            self.draw_screen.line(
-                [(eleft, (etop + RADIUS)), (eleft, (ebottom - RADIUS))],
-                fill=0, width=1)
-            # right
-            self.draw_screen.line(
-                [(eright, (etop + RADIUS)), (eright, (ebottom - RADIUS))],
-                fill=0, width=1)
-
-            # draw arcs to connect event sides
-            # top left corner
-            self.draw_screen.arc(
-                [(eleft, etop), ((eleft + (2*RADIUS)), (etop + (2*RADIUS)))],
-                180, 270, fill=0, width=1)
-            # top right corner
-            self.draw_screen.arc(
-                [((eright - (2*RADIUS)), etop), (eright, (etop + (2*RADIUS)))],
-                270, 0, fill=0, width=1)
-            # bottom left corner
-            self.draw_screen.arc(
-                [(eleft, (ebottom - (2*RADIUS))),
-                 ((eleft + (2*RADIUS)), ebottom)],
-                90, 180, fill=0, width=1)
-            # bottom right corner
-            self.draw_screen.arc(
-                [((eright - (2*RADIUS)), (ebottom - (2*RADIUS))),
-                 (eright, ebottom)],
-                0, 90, fill=0, width=1)
-
     def display(self) -> None:
         '''Send image to display'''
         # TODO comment out when running on pi
@@ -174,22 +181,41 @@ class Draw:
         # time.sleep(2)
         # self.epd.sleep()
 
-    def add_event(self, events: List[Dict[str, str]]) -> None:
-        '''Add event to calendar
-        event: to be added to screen
+    def add_events(self, events: List[Dict[str, str]]) -> None:
         '''
-        # TODO figure out how events will be structured
-        # event = dict:
-        #       title
-        #       time
-        #       name
-        #       location
-        #       privacy
+        Add event to calendar
+        events: list of events to be added to display
+            - title: Title of event to be displayed on calendar
+            - start_weekday: Weekday on which event begins
+            - start_date: Date on which event begins
+                `yyyy-mm-dd`
+            - start_time: Time at which event begins
+                `hh:mm:ss`
+            - end_weekday: Weekday on which event ends
+            - end_date: Date on which event ends
+            - end_time: Time at which event ends
+            - location: Location of event if provided
+            - privacy: Privacy of event
+                - Controlls whether event should be displayed while user is
+                  away from desk or not
 
+        Example event:
+            {
+                'title': '40862 Exam',
+                'start_weekday': 'Thursday',
+                'start_date': '2019-11-21',
+                'start_time': '12:00:00',
+                'end_weekday': 'Thursday',
+                'end_date': '2019-11-21',
+                'end_time': '13:15:00',
+                'location': None,
+                'privacy': 'public'
+            }
+        '''
         self.events += events
 
 
-def get_initial_time(today: datetime) -> Tuple[int, int]:
+def _get_initial_time(today: datetime) -> Tuple[int, int]:
     '''Get initial time set to most recent 30 minute mark'''
     closest_interval: int = (today.minute // 10) * 10
     if closest_interval > 30:
