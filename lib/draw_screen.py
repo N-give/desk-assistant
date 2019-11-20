@@ -47,7 +47,7 @@ class Draw:
         # event: title, time, location, privacy
         self.events: List[Dict[str, str]] = [{
             'title': 'event1',
-            'time': '2019-11-16 17:00:00',
+            'time': '2019-11-19 21:00:00',
             'location': '...here',
             'privacy': 'none'
         }]
