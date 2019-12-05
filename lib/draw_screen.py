@@ -31,7 +31,7 @@ WEEKDAYS = {
 class Draw:
     '''Draw class to simplify displaying calendar information'''
 
-    def __init__(self) -> None:
+    def __init__(self):
         # self.epd = epd7in5.EPD()
         # self.epd.init()
         # self.epd.Clear()
@@ -45,7 +45,7 @@ class Draw:
             "/usr/share/fonts/opentype/freefont/FreeMonoBold.otf", 24)
         self.draw_screen = ImageDraw.Draw(self.screen)
         # event: title, time, location, privacy
-        self.events: List[Dict[str, Optional[str]]] = [{
+        self.events = [{
             'title': 'ECE 40862 Demo',
             'start_weekday': 'Thursday',
             'start_date': '2019-11-20',
@@ -56,13 +56,13 @@ class Draw:
             'location': None,
             'privacy': 'public'
         }]
-        self.days: Dict[int, float] = {}
-        self.times: Dict[Tuple[int, int], float] = {}
+        self.days = {}
+        self.times = {}
 
-    def show_away(self) -> None:
+    def show_away(self):
         '''Setup display to show away screen'''
 
-    def show_calendar(self) -> None:
+    def show_calendar(self):
         '''Setup display to show calendar'''
         self._draw_grid()
         self._draw_events()
@@ -71,10 +71,10 @@ class Draw:
         # TODO create generator over event to check public setting
         for event in self.events:
             start_event = datetime.strptime(
-                f"{event['start_date']} {event['start_time']}",
+                "{} {}".format(event['start_date'], event['start_time']),
                 "%Y-%m-%d %H:%M:%S")
             end_event = datetime.strptime(
-                f"{event['end_date']} {event['end_time']}",
+                "{} {}".format(event['end_date'], event['end_time']),
                 "%Y-%m-%d %H:%M:%S")
 
             # TODO these need to be found to the nearest half hour then
@@ -140,19 +140,19 @@ class Draw:
             else:
                 print('Time not currently displayed on calendar.')
 
-    def _draw_grid(self) -> None:
+    def _draw_grid(self):
         today = datetime.today()
 
         # setup time grid for day
         # Get width for 3 days to be displayed
-        date_line: float = 65
-        grid_width: float = (WIDTH - 10) - date_line
-        day_width: float = grid_width / 3
+        date_line = 65
+        grid_width = (WIDTH - 10) - date_line
+        day_width = grid_width / 3
 
         # Get spacing to display 5 time lines
-        time_line: float = 60
-        grid_height: float = (HEIGHT - 10) - time_line
-        time_height: float = grid_height / 5
+        time_line = 60
+        grid_height = (HEIGHT - 10) - time_line
+        time_height = grid_height / 5
 
         # Draw lines for each day displayed
         for i in range(3):
@@ -167,7 +167,7 @@ class Draw:
                                      fill=0,
                                      outline=0)
             self.draw_screen.text(((date_line + 6.5), 28.5),
-                                  f'{today.day + i}',
+                                  '{}'.format(today.day + i),
                                   font=self.font24, fill=255)
             date_line += day_width
 
@@ -191,12 +191,11 @@ class Draw:
 
             time_line += time_height
 
-    def _get_event_edges(self, start: datetime, end: datetime) \
-            -> Tuple[Optional[float], ...]:
-        top: Optional[float] = None
-        left: Optional[float] = None  # self.days[start.day]
-        right: Optional[float] = None  # self.days[start.day + 1]
-        bottom: Optional[float] = None
+    def _get_event_edges(self, start, end):
+        top = None
+        left = None  # self.days[start.day]
+        right = None  # self.days[start.day + 1]
+        bottom = None
 
         try:
             top = self.times[_get_closest_time(start)]
@@ -220,7 +219,7 @@ class Draw:
 
         return (top, left, right, bottom)
 
-    def display(self) -> None:
+    def display(self):
         '''Send image to display'''
         # TODO comment out when running on pi
         self.screen.show()
@@ -230,7 +229,7 @@ class Draw:
         # time.sleep(2)
         # self.epd.sleep()
 
-    def add_events(self, events: List[Dict[str, Optional[str]]]) -> None:
+    def add_events(self, events):
         '''
         Add event to calendar
         events: list of events to be added to display
@@ -264,7 +263,7 @@ class Draw:
         self.events += events
 
 
-def _get_closest_time(time_stamp: datetime) -> Tuple[int, int]:
+def _get_closest_time(time_stamp):
     '''Get initial time set to most recent 30 minute mark'''
     # closest_interval: int = (time_stamp.minute // 10) * 10
     if time_stamp.minute >= 30:
