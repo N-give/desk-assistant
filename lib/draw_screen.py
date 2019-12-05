@@ -11,8 +11,11 @@ from .waveshare_epd import epd7in5
 # FreeMonoBold18: 11x18 pixels per char
 # FreeMonoBold24: 15x24 pixels per char
 
-WIDTH = 640
-HEIGHT = 384
+# WIDTH = 640
+# HEIGHT = 384
+
+WIDTH = 384
+HEIGHT = 640
 
 RADIUS = 10
 
@@ -40,10 +43,10 @@ class Draw:
         self.screen = Image.new('1', (WIDTH, HEIGHT), 255)
         self.font18 = ImageFont.truetype(
             "/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf", 18)
-            # "/usr/share/fonts/opentype/freefont/FreeMonoBold.otf", 18)
+        # "/usr/share/fonts/opentype/freefont/FreeMonoBold.otf", 18)
         self.font24 = ImageFont.truetype(
             "/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf", 24)
-            # "/usr/share/fonts/opentype/freefont/FreeMonoBold.otf", 24)
+        # "/usr/share/fonts/opentype/freefont/FreeMonoBold.otf", 24)
         self.draw_screen = ImageDraw.Draw(self.screen)
         # event: title, time, location, privacy
         self.events = [{
@@ -148,15 +151,15 @@ class Draw:
         # Get width for 3 days to be displayed
         date_line = 65
         grid_width = (WIDTH - 10) - date_line
-        day_width = grid_width / 3
+        day_width = grid_width / 2
 
         # Get spacing to display 5 time lines
         time_line = 60
         grid_height = (HEIGHT - 10) - time_line
-        time_height = grid_height / 5
+        time_height = grid_height / 7
 
         # Draw lines for each day displayed
-        for i in range(3):
+        for i in range(2):
             self.days[today.day + i] = date_line
             self.draw_screen.line([(date_line, 60),
                                    (date_line, (HEIGHT - 10))], fill=0)
@@ -183,7 +186,8 @@ class Draw:
             self.draw_screen.line([(60, time_line),
                                    ((WIDTH - 10), time_line)], fill=0)
             self.draw_screen.text((6, (time_line - 9)),
-                                  '{:02}:{:02}'.format(current_hour, current_minute),
+                                  '{:02}:{:02}'.format(
+                                      (current_hour % 24), current_minute),
                                   fill=0, font=self.font18)
             current_minute += 30
             if current_minute == 60:
