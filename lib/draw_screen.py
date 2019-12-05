@@ -65,6 +65,9 @@ class Draw:
 
     def show_away(self):
         '''Setup display to show away screen'''
+        self.epd.Clear()
+        self.draw_screen.text((WIDTH / 2, HEIGHT / 2), "I'm Currently Away",
+                              fill=0, font=self.font24)
 
     def show_calendar(self):
         '''Setup display to show calendar'''
