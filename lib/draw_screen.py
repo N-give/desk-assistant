@@ -163,7 +163,7 @@ class Draw:
         # Get width for 3 days to be displayed
         date_line = 65
         grid_width = (WIDTH - 10) - date_line
-        day_width = grid_width / 2
+        day_width = grid_width
 
         # Get spacing to display 5 time lines
         time_line = 60
@@ -171,7 +171,7 @@ class Draw:
         time_height = grid_height / 7
 
         # Draw lines for each day displayed
-        for i in range(2):
+        for i in range(1):
             self.days[today.day + i] = date_line
             self.draw_screen.line([(date_line, 60),
                                    (date_line, (HEIGHT - 10))], fill=0)
