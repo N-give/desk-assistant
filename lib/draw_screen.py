@@ -244,7 +244,7 @@ class Draw:
         # TODO uncomment for actual display
         self.epd.display(self.epd.getbuffer(self.screen))
         time.sleep(2)
-        self.epd.sleep()
+        # self.epd.sleep()
 
     def add_events(self, events):
         '''
