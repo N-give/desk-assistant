@@ -4,7 +4,7 @@ from typing import Tuple, Dict, List
 # import time
 from datetime import datetime
 from PIL import Image, ImageDraw, ImageFont  # type: ignore
-# from waveshare_epd import epd7in5 # type: ignore
+from . import waveshare_epd as ws
 
 # XXX Set to desired system font or font from ./pic/
 # Recommended to use monospace font to ensure alignment shape and text
@@ -32,9 +32,9 @@ class Draw:
     '''Draw class to simplify displaying calendar information'''
 
     def __init__(self) -> None:
-        # self.epd = epd7in5.EPD()
-        # self.epd.init()
-        # self.epd.Clear()
+        self.epd = ws.epd7in5.EPD()
+        self.epd.init()
+        self.epd.Clear()
 
         # 255 -> set image to all white
         # 0   -> set image to all black
@@ -174,12 +174,12 @@ class Draw:
     def display(self) -> None:
         '''Send image to display'''
         # TODO comment out when running on pi
-        self.screen.show()
+        # self.screen.show()
 
         # TODO uncomment for actual display
-        # self.epd.display(self.epd.getbuffer(self.screen))
-        # time.sleep(2)
-        # self.epd.sleep()
+        self.epd.display(self.epd.getbuffer(self.screen))
+        time.sleep(2)
+        self.epd.sleep()
 
     def add_events(self, events: List[Dict[str, str]]) -> None:
         '''
