@@ -63,6 +63,15 @@ class Draw:
         self.days = {}
         self.times = {}
 
+    # def __del__(self):
+    #     # self.epd.Clear()
+    #     epd7in5.epdconfig.module_exit()
+
+    def clear_screen(self):
+        '''Get fresh image so the screen can be redrawn'''
+        self.screen = Image.new('1', (WIDTH, HEIGHT), 255)
+        self.draw_screen = ImageDraw.Draw(self.screen)
+
     def show_away(self):
         '''Setup display to show away screen'''
         self.epd.Clear()
