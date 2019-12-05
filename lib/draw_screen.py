@@ -1,5 +1,4 @@
 '''Draw class implementation for e-paper desk assisstant'''
-from typing import Tuple, Dict, List, Optional
 # import os
 # import time
 from datetime import datetime
