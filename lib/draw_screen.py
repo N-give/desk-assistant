@@ -1,6 +1,7 @@
 '''Draw class implementation for e-paper desk assisstant'''
 # import os
 import time
+import pprint
 from datetime import datetime
 from PIL import Image, ImageDraw, ImageFont  # type: ignore
 from .waveshare_epd import epd7in5
@@ -13,6 +14,8 @@ from .waveshare_epd import epd7in5
 
 # WIDTH = 640
 # HEIGHT = 384
+
+pp = pprint.PrettyPrinter(indent=4)
 
 WIDTH = 384
 HEIGHT = 640
@@ -103,7 +106,9 @@ class Draw:
 
             # TODO add case when an event beginning has already already passed
             # but the event hasn't ended yet
+            
             edges = self._get_event_edges(start_event, end_event)
+            print(edges)
             if all(edges):
                 etop, eleft, eright, ebottom = edges
 
@@ -155,7 +160,8 @@ class Draw:
                                       font=self.font18, fill=0)
 
             else:
-                print('Time not currently displayed on calendar.')
+                print('Event not currently displayed on calendar.')
+                pp.pprint(event)
 
     def _draw_grid(self):
         today = datetime.today()
@@ -189,6 +195,7 @@ class Draw:
             date_line += day_width
 
         # Draw last line to close calendar grid
+        self.days[today.day + 1] = date_line
         self.draw_screen.line([(date_line, 60),
                                (date_line, (HEIGHT - 10))], fill=0)
 
@@ -278,7 +285,7 @@ class Draw:
                 'privacy': 'public'
             }
         '''
-        self.events += events
+        self.events = events
 
 
 def _get_closest_time(time_stamp):
