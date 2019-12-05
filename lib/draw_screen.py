@@ -1,9 +1,9 @@
 '''Draw class implementation for e-paper desk assisstant'''
 # import os
-# import time
+import time
 from datetime import datetime
 from PIL import Image, ImageDraw, ImageFont  # type: ignore
-from . import waveshare_epd as ws
+from .waveshare_epd import epd7in5
 
 # XXX Set to desired system font or font from ./pic/
 # Recommended to use monospace font to ensure alignment shape and text
@@ -30,8 +30,8 @@ WEEKDAYS = {
 class Draw:
     '''Draw class to simplify displaying calendar information'''
 
-    def __init__(self) -> None:
-        self.epd = ws.epd7in5.EPD()
+    def __init__(self):
+        self.epd = epd7in5.EPD()
         self.epd.init()
         self.epd.Clear()
 
@@ -39,9 +39,11 @@ class Draw:
         # 0   -> set image to all black
         self.screen = Image.new('1', (WIDTH, HEIGHT), 255)
         self.font18 = ImageFont.truetype(
-            "/usr/share/fonts/opentype/freefont/FreeMonoBold.otf", 18)
+            "/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf", 18)
+            # "/usr/share/fonts/opentype/freefont/FreeMonoBold.otf", 18)
         self.font24 = ImageFont.truetype(
-            "/usr/share/fonts/opentype/freefont/FreeMonoBold.otf", 24)
+            "/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf", 24)
+            # "/usr/share/fonts/opentype/freefont/FreeMonoBold.otf", 24)
         self.draw_screen = ImageDraw.Draw(self.screen)
         # event: title, time, location, privacy
         self.events = [{
@@ -166,7 +168,7 @@ class Draw:
                                      fill=0,
                                      outline=0)
             self.draw_screen.text(((date_line + 6.5), 28.5),
-                                  '{}'.format(today.day + i),
+                                  '{:2}'.format(today.day + i),
                                   font=self.font24, fill=255)
             date_line += day_width
 
@@ -181,7 +183,7 @@ class Draw:
             self.draw_screen.line([(60, time_line),
                                    ((WIDTH - 10), time_line)], fill=0)
             self.draw_screen.text((6, (time_line - 9)),
-                                  f'{current_hour:02}:{current_minute:02}',
+                                  '{:02}:{:02}'.format(current_hour, current_minute),
                                   fill=0, font=self.font18)
             current_minute += 30
             if current_minute == 60:
