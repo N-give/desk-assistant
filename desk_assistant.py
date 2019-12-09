@@ -63,7 +63,7 @@ def main():
         elif camera.recognize_faces():
             r = requests.post("https://maker.ifttt.com/trigger/update_log/with/key/pSaBhwacOFzl-hJpYXwmwOCI0RStK8DkuIQrVx8rqcx", params={"value1":"logged in"})
             screen.clear_screen() # = Draw()    
-
+            calendar.update_events()
             events = calendar.get_events()
             screen.add_events(events)
             screen.show_calendar()
